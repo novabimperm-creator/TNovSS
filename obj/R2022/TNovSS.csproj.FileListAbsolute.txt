@@ -1,0 +1,18 @@
+\\fs-nova\Distr\0.For Admin\_TNov\build\2022\TNovSS.dll.config
+\\fs-nova\Distr\0.For Admin\_TNov\build\2022\TNovSS.dll
+\\fs-nova\Distr\0.For Admin\_TNov\build\2022\TNovSS.pdb
+Z:\DEV\TNovSS\obj\R2022\TNovSS.csproj.AssemblyReference.cache
+Z:\DEV\TNovSS\obj\R2022\SSNumbererWPF.g.cs
+Z:\DEV\TNovSS\obj\R2022\TNovSS_MarkupCompile.cache
+Z:\DEV\TNovSS\obj\R2022\TNovSS_MarkupCompile.lref
+Z:\DEV\TNovSS\obj\R2022\SSNumbererWPF.baml
+Z:\DEV\TNovSS\obj\R2022\TNovSS.g.resources
+Z:\DEV\TNovSS\obj\R2022\TNovSS.IntersectionResultsForm.resources
+Z:\DEV\TNovSS\obj\R2022\TNovSS.LinkSelectionForm.resources
+Z:\DEV\TNovSS\obj\R2022\TNovSS.ResultForm.resources
+Z:\DEV\TNovSS\obj\R2022\TNovSS.SingleCategorySelectionForm.resources
+Z:\DEV\TNovSS\obj\R2022\TNovSS.csproj.GenerateResource.cache
+Z:\DEV\TNovSS\obj\R2022\TNovSS.csproj.CoreCompileInputs.cache
+Z:\DEV\TNovSS\obj\R2022\TNovSS.csproj.Up2Date
+Z:\DEV\TNovSS\obj\R2022\TNovSS.dll
+Z:\DEV\TNovSS\obj\R2022\TNovSS.pdb
