@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Windows.Forms;
 
 namespace TNovSS
@@ -30,7 +31,8 @@ namespace TNovSS
         public event EventHandler NextClicked;
         public event EventHandler CancelClicked;
 
-        // Свойства
+        // Свойства (runtime-only, не для WinForms Designer)
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool ShowBackButton
         {
             get => BackButton != null && BackButton.Visible;
@@ -41,6 +43,7 @@ namespace TNovSS
             }
         }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public string NextButtonText
         {
             get => NextButton != null ? NextButton.Text : string.Empty;

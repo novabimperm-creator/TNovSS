@@ -5,6 +5,7 @@ using Autodesk.Revit.UI;
 using Autodesk.Revit.DB;
 using System.Windows.Forms;
 using System.Drawing;
+using TNovCommon;
 
 namespace TNovSS
 {
@@ -80,6 +81,7 @@ namespace TNovSS
                 // Заполняем список
                 foreach (var intersection in _intersections)
                 {
+#if R2022
                     var item = new System.Windows.Forms.ListViewItem(new[] {
                         intersection.CurrentElementName ?? "Без имени",
                         intersection.CurrentElementId.IntegerValue.ToString(),
@@ -88,6 +90,16 @@ namespace TNovSS
                         intersection.LinkDocumentName,
                         "Показать в 3D"
                     });
+#else
+                    var item = new System.Windows.Forms.ListViewItem(new[] {
+                        intersection.CurrentElementName ?? "Без имени",
+                        intersection.CurrentElementId.Value.ToString(),
+                        intersection.LinkedElementName ?? "Без имени",
+                        intersection.LinkedElementId.Value.ToString(),
+                        intersection.LinkDocumentName,
+                        "Показать в 3D"
+                    });
+#endif
                     item.Tag = intersection;
                     listView.Items.Add(item);
                 }
@@ -167,19 +179,25 @@ namespace TNovSS
                 }
                 catch (Exception ex)
                 {
-                    TaskDialog.Show("Внимание", $"Не удалось показать текущий элемент: {ex.Message}");
+                    new InfoWindow280($"Не удалось показать текущий элемент: {ex.Message}").ShowDialog();
                 }
-
-                TaskDialog.Show("Навигация",
+#if R2022
+                new InfoWindow280(
                     $"Элемент показан в 3D виде.\n\n" +
                     $"Текущий элемент: {intersection.CurrentElementName} (ID: {intersection.CurrentElementId.IntegerValue})\n" +
                     $"Связанный элемент: {intersection.LinkedElementName} (ID: {intersection.LinkedElementId.IntegerValue})\n" +
-                    $"Файл: {intersection.LinkDocumentName}");
-
+                    $"Файл: {intersection.LinkDocumentName}").ShowDialog();
+#else
+                new InfoWindow280(
+                    $"Элемент показан в 3D виде.\n\n" +
+                    $"Текущий элемент: {intersection.CurrentElementName} (ID: {intersection.CurrentElementId.Value})\n" +
+                    $"Связанный элемент: {intersection.LinkedElementName} (ID: {intersection.LinkedElementId.Value})\n" +
+                    $"Файл: {intersection.LinkDocumentName}").ShowDialog();
+#endif
             }
             catch (Exception ex)
             {
-                TaskDialog.Show("Ошибка", $"Не удалось перейти к элементу: {ex.Message}");
+                new InfoWindow280($"Не удалось перейти к элементу: {ex.Message}").ShowDialog();
             }
         }
     }

@@ -62,7 +62,7 @@ namespace TNovSS
                 var selectedCategories = categoryForm.GetSelectedCategories();
                 if (selectedCategories.Count == 0)
                 {
-                    TaskDialog.Show("Выбор категорий", "Не выбрано ни одной категории для проверки.");
+                    new InfoWindow280("Не выбрано ни одной категории для проверки.").ShowDialog();
                     Logger.Log("Не выбрано ни одной категории для проверки. Завершение работы.", 3); return Result.Cancelled;
                 }
 
@@ -95,10 +95,10 @@ namespace TNovSS
                 }
                 else if (!_cancelled)
                 {
-                    TaskDialog.Show("Проверка пересечений",
+                    new InfoWindow280(
                         $"Пересечений не найдено с файлом: {linkDoc.Title}\n" +
                         $"Время выполнения: {_stopwatch.Elapsed.TotalSeconds:F1} сек\n" +
-                        $"Проверено элементов: {_processedCount}");
+                        $"Проверено элементов: {_processedCount}").ShowDialog();
                 }
                 Logger.Log("Завершение работы.", 5);
                 return Result.Succeeded;

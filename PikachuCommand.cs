@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using TNovCommon;
+using TaskDialog = Autodesk.Revit.UI.TaskDialog;
 
 namespace TNovSS
 {
@@ -31,7 +32,7 @@ namespace TNovSS
             // Проверка на наличие открытого документа
             if (doc == null)
             {
-                TaskDialog.Show("Ошибка", "Нет активного документа!");
+                new InfoWindow280("Нет активного документа!").ShowDialog();
                 return Result.Failed;
             }
 
@@ -62,7 +63,7 @@ namespace TNovSS
                             // Проверка на null связанного документа
                             if (linkDoc == null)
                             {
-                                TaskDialog.Show("Ошибка", "Не удалось получить связанный документ!");
+                                new InfoWindow280("Не удалось получить связанный документ!").ShowDialog();
                                 continue;
                             }
 
@@ -131,7 +132,11 @@ namespace TNovSS
                             selectedFamilyA = familyAForm.SelectedFamily;
                             instanceCountOnLevel = familyAForm.InstanceCountOnLevel;
                             familyASelected = true;
+#if R2022
                             Logger.Log("Выбрано семейство " + selectedFamilyA.Name + " " + selectedFamilyA.Id.IntegerValue.ToString(), 1);
+#else
+                            Logger.Log("Выбрано семейство " + selectedFamilyA.Name + " " + selectedFamilyA.Id.Value.ToString(), 1);
+#endif
                         }
                         else if (familyAResult == DialogResult.Abort) // Назад
                         {
@@ -165,7 +170,12 @@ namespace TNovSS
                         if (familyBResult == DialogResult.OK && familyBForm.SelectedFamily != null)
                         {
                             selectedFamilyB = familyBForm.SelectedFamily;
-                            familyBSelected = true; Logger.Log("Выбрано семейство " + selectedFamilyB.Name + " " + selectedFamilyB.Id.IntegerValue.ToString(), 1);
+                            familyBSelected = true;
+#if R2022
+                            Logger.Log("Выбрано семейство " + selectedFamilyB.Name + " " + selectedFamilyB.Id.IntegerValue.ToString(), 1);
+#else
+                            Logger.Log("Выбрано семейство " + selectedFamilyB.Name + " " + selectedFamilyB.Id.Value.ToString(), 1);
+#endif
                         }
                         else if (familyBResult == DialogResult.Abort) // Назад
                         {
@@ -224,9 +234,10 @@ namespace TNovSS
                     // Проверка на слишком малое расстояние
                     if (Math.Abs(distance) < 0.001)
                     {
-                        TaskDialog.Show("Внимание",
+                        new InfoWindow280(
                             "Расстояние слишком мало! Элементы будут размещены в одной точке.\n" +
-                            "Рекомендуется использовать расстояние не менее 0.01 м."); Logger.Log("   Элементы будут размещены в одной точке", 1);
+                            "Рекомендуется использовать расстояние не менее 0.01 м.").ShowDialog(); 
+                        Logger.Log("   Элементы будут размещены в одной точке", 1);
                     }
 
 
@@ -288,8 +299,7 @@ namespace TNovSS
                     {
                         string mes8 = "Размещение завершено, но новых элементов не было создано.\n" +
                             "Возможно, все элементы уже существуют на правильных позициях.";
-                        TaskDialog.Show("Результат",
-                            mes8); Logger.Log(mes8, 1);
+                        new InfoWindow280(mes8).ShowDialog(); Logger.Log(mes8, 1);
                     }
 
                     // Завершаем работу плагина
@@ -390,8 +400,11 @@ namespace TNovSS
                 {
                     // Получаем ID элемента А
                     string sourceId = instanceA.Id.ToString();
-                    Logger.Log("Исходный элемент " + instanceA.Name + " " + instanceA.Id.IntegerValue.ToString(), 2); //расширенные логи
-
+#if R2022
+                    Logger.Log("Исходный элемент " + instanceA.Name + " " + instanceA.Id.IntegerValue.ToString(), 2);
+#else
+                    Logger.Log("Исходный элемент " + instanceA.Name + " " + instanceA.Id.Value.ToString(), 2);
+#endif
                     // Проверяем, существует ли уже элемент Б для этого источника
                     if (existingElementsBySourceId.TryGetValue(sourceId, out FamilyInstance existingInstanceB))
                     {
@@ -455,22 +468,30 @@ namespace TNovSS
                         SetSourceIdComment(newInstance, instanceA.Id);
                         createdElements.Add(newInstance.Id);
                         placedCount++;
+#if R2022
                         Logger.Log("   создан элемент " + newInstance.Name + " " + newInstance.Id.IntegerValue.ToString(), 2);
+#else
+                        Logger.Log("   создан элемент " + newInstance.Name + " " + newInstance.Id.Value.ToString(), 2);
+#endif
                     }
                 }
                 catch (Exception ex)
                 {
+#if R2022
                     Logger.Log("Исходный элемент " + instanceA.Name + " " + instanceA.Id.IntegerValue.ToString() + "ошибка: "
                         + ex.Message, 4);
-
+#else
+                    Logger.Log("Исходный элемент " + instanceA.Name + " " + instanceA.Id.Value.ToString() + "ошибка: "
+                        + ex.Message, 4);
+#endif
                     errorCount++;
                     Debug.WriteLine($"Ошибка размещения элемента {instanceA.Id}: {ex.Message}");
 
                     if (errorCount > 10)
                     {
-                        TaskDialog.Show("Внимание",
+                        new InfoWindow280(
                             $"Слишком много ошибок ({errorCount}). Прекращаем размещение.\n" +
-                            $"Успешно размещено: {placedCount} элементов.");
+                            $"Успешно размещено: {placedCount} элементов.").ShowDialog();
                         break;
                     }
                 }
@@ -485,11 +506,11 @@ namespace TNovSS
             else
             {
                 // Показываем простой результат, если нет существующих элементов
-                TaskDialog.Show("Результаты размещения",
+                new InfoWindow280(
                     $"Всего элементов А: {instancesAList.Count}\n" +
                     $"Создано новых элементов Б: {placedCount}\n" +
                     $"Пропущено (уже существуют): {skippedCount}\n" +
-                    $"Ошибок: {errorCount}");
+                    $"Ошибок: {errorCount}").ShowDialog();
             }
 
             return createdElements;
@@ -668,7 +689,7 @@ namespace TNovSS
             }
             else
             {
-                TaskDialog.Show("Результаты размещения", message.ToString());
+                new InfoWindow280(message.ToString()).ShowDialog();
             }
         }
 
@@ -737,9 +758,9 @@ namespace TNovSS
                 }
             }
 
-            TaskDialog.Show("Замена элементов",
+            new InfoWindow280(
                 $"Заменено элементов: {replacedCount}\n" +
-                $"Ошибок при замене: {errorCount}");
+                $"Ошибок при замене: {errorCount}").ShowDialog();
         }
 
         private void CopyParameters(FamilyInstance source, FamilyInstance target)
@@ -848,7 +869,7 @@ namespace TNovSS
 
                 var closeButton = new System.Windows.Forms.Button();
                 closeButton.Text = "Закрыть";
-                closeButton.DialogResult = System.Windows.Forms.DialogResult.OK;
+                closeButton.DialogResult = DialogResult.OK;
                 closeButton.Anchor = System.Windows.Forms.AnchorStyles.Right;
                 closeButton.Location = new System.Drawing.Point(800, 10);
 

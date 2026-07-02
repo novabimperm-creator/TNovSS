@@ -284,19 +284,33 @@ namespace TNovSS
                 listItem.Tag = family;
 
                 // Подсветка электрооборудования (категория ЭЛ)
-                if (family.FamilyCategory != null &&
-                    family.FamilyCategory.Id.IntegerValue == (int)BuiltInCategory.OST_ElectricalEquipment)
+                if (family.FamilyCategory != null)
                 {
-                    listItem.ForeColor = System.Drawing.Color.FromArgb(220, 53, 69); // Красный для ЭЛ
-                    listItem.Font = new System.Drawing.Font(_familyListView.Font, System.Drawing.FontStyle.Bold);
+#if R2022
+                        long catId = family.FamilyCategory.Id.IntegerValue;
+#else
+                    long catId = family.FamilyCategory.Id.Value;
+#endif
+                    if (catId == (int)BuiltInCategory.OST_ElectricalEquipment)
+                    {
+                        listItem.ForeColor = System.Drawing.Color.FromArgb(220, 53, 69); // Красный для ЭЛ
+                        listItem.Font = new System.Drawing.Font(_familyListView.Font, System.Drawing.FontStyle.Bold);
+                    }
                 }
                 // Подсветка ОВ/ВК категорий
-                else if (family.FamilyCategory != null &&
-                        (family.FamilyCategory.Id.IntegerValue == (int)BuiltInCategory.OST_MechanicalEquipment ||
-                         family.FamilyCategory.Id.IntegerValue == (int)BuiltInCategory.OST_DuctAccessory ||
-                         family.FamilyCategory.Id.IntegerValue == (int)BuiltInCategory.OST_PipeAccessory))
+                else if (family.FamilyCategory != null) 
                 {
-                    listItem.ForeColor = System.Drawing.Color.FromArgb(0, 123, 255); // Синий для ОВ/ВК
+#if R2022
+                        long catId = family.FamilyCategory.Id.IntegerValue;
+#else
+                    long catId = family.FamilyCategory.Id.Value;
+#endif
+                    if (catId == (int)BuiltInCategory.OST_MechanicalEquipment ||
+                     catId == (int)BuiltInCategory.OST_DuctAccessory ||
+                     catId == (int)BuiltInCategory.OST_PipeAccessory)
+                    {
+                        listItem.ForeColor = System.Drawing.Color.FromArgb(0, 123, 255); // Синий для ОВ/ВК
+                    } 
                 }
 
                 _familyListView.Items.Add(listItem);
@@ -358,21 +372,34 @@ namespace TNovSS
                 listItem.Tag = family;
 
                 // Подсветка электрооборудования (категория ЭЛ)
-                if (family.FamilyCategory != null &&
-                    family.FamilyCategory.Id.IntegerValue == (int)BuiltInCategory.OST_ElectricalEquipment)
+                if (family.FamilyCategory != null)
                 {
-                    listItem.ForeColor = System.Drawing.Color.FromArgb(220, 53, 69); // Красный для ЭЛ
-                    listItem.Font = new System.Drawing.Font(_familyListView.Font, System.Drawing.FontStyle.Bold);
+#if R2022
+                        long catId = family.FamilyCategory.Id.IntegerValue;
+#else
+                    long catId = family.FamilyCategory.Id.Value;
+#endif
+                    if (catId == (int)BuiltInCategory.OST_ElectricalEquipment)
+                    {
+                        listItem.ForeColor = System.Drawing.Color.FromArgb(220, 53, 69); // Красный для ЭЛ
+                        listItem.Font = new System.Drawing.Font(_familyListView.Font, System.Drawing.FontStyle.Bold);
+                    }
                 }
                 // Подсветка ОВ/ВК категорий
-                else if (family.FamilyCategory != null &&
-                        (family.FamilyCategory.Id.IntegerValue == (int)BuiltInCategory.OST_MechanicalEquipment ||
-                         family.FamilyCategory.Id.IntegerValue == (int)BuiltInCategory.OST_DuctAccessory ||
-                         family.FamilyCategory.Id.IntegerValue == (int)BuiltInCategory.OST_PipeAccessory))
+                else if (family.FamilyCategory != null)
                 {
-                    listItem.ForeColor = System.Drawing.Color.FromArgb(0, 123, 255); // Синий для ОВ/ВК
+#if R2022
+                        long catId = family.FamilyCategory.Id.IntegerValue;
+#else
+                    long catId = family.FamilyCategory.Id.Value;
+#endif
+                    if (catId == (int)BuiltInCategory.OST_MechanicalEquipment ||
+                         catId == (int)BuiltInCategory.OST_DuctAccessory ||
+                         catId == (int)BuiltInCategory.OST_PipeAccessory)
+                    {
+                        listItem.ForeColor = System.Drawing.Color.FromArgb(0, 123, 255); // Синий для ОВ/ВК
+                    }
                 }
-
                 _familyListView.Items.Add(listItem);
             }
 
