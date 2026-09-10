@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>Структурная схема</Name>
+    <Assembly>SchemeBuilder\SchemeBuilder.dll</Assembly>
+    <AddInId>c6b18261-7594-4ca8-85bb-ec07ae22ab1d</AddInId>
+    <FullClassName>SchemeBuilder.App</FullClassName>
+    <VendorId>SCHM</VendorId>
+    <VendorDescription>Структурная схема — инструменты раздела СС</VendorDescription>
+  </AddIn>
+</RevitAddIns>
