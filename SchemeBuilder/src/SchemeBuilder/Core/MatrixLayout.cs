@@ -157,10 +157,21 @@ namespace SchemeBuilder.Core
                 band.Title = TitleOf(band);
                 band.Elevation = ElevationOf(band);
 
+                // Щиты нумеруются здесь, а не при сборе: номер должен идти по порядку ячеек на
+                // схеме, а порядок известен только сейчас. И до нумерации все щиты называются
+                // одинаково — иначе этажи перестают совпадать по составу и типовые не сводятся.
+                int panel = 0;
+
                 // Ячейки берутся с первого этажа строки: у остальных состав тот же, иначе они бы
                 // в неё не попали.
                 foreach (ZoneGroup zone in Order(band.Floors[0].Zones, settings))
                 {
+                    if (zone.Key.StartsWith(SchemeScanner.PanelKey, StringComparison.Ordinal))
+                    {
+                        panel++;
+                        zone.Rename(PanelName(band, settings, panel));
+                    }
+
                     // Ячейке «зона не определена» на листе не место: это брак данных, а не
                     // помещение. Считать её надо — потому и остаётся выключателем, — но по
                     // умолчанию она не чертится, иначе на каждом этаже зияет колонка без имени.
@@ -351,6 +362,53 @@ namespace SchemeBuilder.Core
 
                 band.Cells[cell].WidthMm *= widest / 2.0 / part;
             }
+        }
+
+        /// <summary>
+        /// Имя ячейки щита: «ЩТС 6.1», «ЩТС 6.2» — номер этажа и порядок щита слева направо,
+        /// как на выпущенном листе. У свёрнутой строки этажа нет — там остаётся «ЩТС 1»: писать
+        /// «ЩТС 3.1» на строке «Этаж 3–8» значит выдать один этаж за шесть.
+        /// </summary>
+        private static string PanelName(MatrixBand band, SchemeSettings settings, int number)
+        {
+            string prefix = settings.MatrixPanelPrefix ?? string.Empty;
+            string order = number.ToString(CultureInfo.CurrentCulture);
+
+            if (band.IsTypical) return prefix + order;
+
+            string floor = FloorNumber(band.Floors[0].Name);
+            return floor.Length == 0 ? prefix + order : prefix + floor + "." + order;
+        }
+
+        /// <summary>Номер этажа из имени уровня: «06 15,600 Этаж 6» → «6». Не нашёлся — пусто.</summary>
+        private static string FloorNumber(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return string.Empty;
+
+            // Берём последнее целое число имени: впереди стоят порядковый номер уровня и отметка,
+            // а номер этажа записан в конце.
+            string digits = string.Empty;
+            string found = string.Empty;
+
+            foreach (char symbol in name)
+            {
+                if (char.IsDigit(symbol))
+                {
+                    digits += symbol;
+                    continue;
+                }
+
+                // Отметку «15,600» отбрасываем целиком: её дробная часть тоже цифры.
+                if (symbol == ',' || symbol == '.') digits = string.Empty;
+                else if (digits.Length > 0)
+                {
+                    found = digits;
+                    digits = string.Empty;
+                }
+            }
+
+            if (digits.Length > 0) found = digits;
+            return found.TrimStart('0');
         }
 
         /// <summary>Состав этажа строкой: по нему решается, типовой ли он.</summary>

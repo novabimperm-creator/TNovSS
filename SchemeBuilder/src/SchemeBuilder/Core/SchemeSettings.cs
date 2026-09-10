@@ -193,6 +193,15 @@ namespace SchemeBuilder.Core
         /// <summary>Как подписывается ячейка щита: к имени добавляется «этаж.номер».</summary>
         public string MatrixPanelPrefix { get; set; } = "ЩТС ";
 
+        /// <summary>
+        /// В каком радиусе от щита прибор считается стоящим в нём, мм. Ноль — не стягивать.
+        ///
+        /// Ноль по умолчанию не от осторожности: в модели 76-СУЗДАЛ модули стоят в 2–6 метрах от
+        /// щита, у клапанов и в коридорах, а не в шкафу. Стянуть их по расстоянию значит соврать
+        /// о составе щита. Где приборы правда смонтированы в шкафу, радиус ставится руками.
+        /// </summary>
+        public double MatrixPanelRadiusMm { get; set; }
+
         /// <summary>Где идут стояки магистралей.</summary>
         public TrunkPosition MatrixTrunkPosition { get; set; } = TrunkPosition.Middle;
 
@@ -364,6 +373,7 @@ namespace SchemeBuilder.Core
             text.AppendLine("MFLOORW=" + MatrixFloorColumnMm.ToString(CultureInfo.InvariantCulture));
             text.AppendLine("MPANEL=" + Escape(MatrixPanelPattern));
             text.AppendLine("MPANELPRE=" + Escape(MatrixPanelPrefix));
+            text.AppendLine("MPANELR=" + MatrixPanelRadiusMm.ToString(CultureInfo.InvariantCulture));
             text.AppendLine("MTRUNKPOS=" + ((int)MatrixTrunkPosition).ToString(CultureInfo.InvariantCulture));
             text.AppendLine("MTRUNK=" + (MatrixDrawTrunks ? "1" : "0"));
             text.AppendLine("MUNZONED=" + (MatrixShowUnzoned ? "1" : "0"));
@@ -585,6 +595,10 @@ namespace SchemeBuilder.Core
 
                     case "MPANELPRE":
                         settings.MatrixPanelPrefix = Unescape(value) ?? string.Empty;
+                        break;
+
+                    case "MPANELR":
+                        settings.MatrixPanelRadiusMm = ParseDouble(value, settings.MatrixPanelRadiusMm);
                         break;
 
                     case "MTRUNKPOS":

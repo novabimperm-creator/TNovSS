@@ -15,6 +15,9 @@ namespace SchemeBuilder.Core
     {
         public const string NoZone = "— зона не определена —";
 
+        /// <summary>Начало ключа зоны-щита. По нему раскладка отличает щит от помещения.</summary>
+        public const string PanelKey = "PANEL:";
+
         /// <param name="observer">
         /// Необязательный наблюдатель «этаж, зона, точка устройства». Нужен отчёту, чтобы
         /// посчитать средние координаты зон, — самой матрице координаты не нужны.
@@ -55,6 +58,13 @@ namespace SchemeBuilder.Core
                 .OrderBy(l => l.Elevation)
                 .ToList();
 
+            // Щиты собираются до приборов и независимо от галок шага 2: щит на схеме — не строка
+            // легенды, а ячейка, и снимать его из таблицы обозначений разумно, а из схемы нет.
+            List<Panel> panels = Panels(document, settings, levels, floors, levelElevations);
+
+            double radius = UnitUtils.ConvertToInternalUnits(
+                Math.Max(0.0, settings.MatrixPanelRadiusMm), UnitTypeId.Millimeters);
+
             foreach (BuiltInCategory category in settings.Categories)
             {
                 foreach (Element instance in new FilteredElementCollector(document)
@@ -63,13 +73,12 @@ namespace SchemeBuilder.Core
                 {
                     ElementId typeId = instance.GetTypeId();
                     if (typeId == ElementId.InvalidElementId) continue;
+
+                    // Сам щит блоком не рисуется: он и есть ячейка.
+                    if (IsPanel(document, typeId, settings)) continue;
                     if (!included.Contains(typeId.IntegerValue)) continue;
 
                     XYZ point = PointOf(instance);
-
-                    // Этажный щит — узел схемы, а не ещё один прибор в коридоре: он становится
-                    // своей ячейкой, как «ЩТС 6.1» на выпущенном листе.
-                    bool panel = IsPanel(document, typeId, settings);
 
                     ElementId levelId = ResolveLevel(instance, point, levels);
                     if (levelId == ElementId.InvalidElementId)
@@ -80,8 +89,12 @@ namespace SchemeBuilder.Core
 
                     FloorGroup floor = Floor(document, floors, levelElevations, levelId);
 
-                    Zone place = panel
-                        ? new Zone("PANEL:" + instance.UniqueId, settings.MatrixPanelPrefix.Trim())
+                    // Прибор рядом со щитом — это прибор в щите: модули и релейки стоят внутри
+                    // шкафа, и на схеме они в его ячейке, а не в коридоре, где шкаф висит.
+                    Panel near = Nearest(panels, levelId, point, radius);
+
+                    Zone place = near != null
+                        ? new Zone(near.Key, near.Zone.Name)
                         : ResolveZone(instance, point, locator, settings, floor.Elevation);
 
                     if (string.IsNullOrWhiteSpace(place.Name))
@@ -120,7 +133,6 @@ namespace SchemeBuilder.Core
             // Этажи сверху вниз, как на готовых схемах: верхний этаж — верхняя полоса.
             data.Floors.AddRange(floors.Values.OrderByDescending(f => f.Elevation));
 
-            NumberPanels(data, settings);
 
             foreach (FloorGroup floor in data.Floors)
             {
@@ -230,6 +242,97 @@ namespace SchemeBuilder.Core
             public string Name { get; }
         }
 
+        /// <summary>Этажный щит: своя ячейка схемы и точка, к которой стягиваются приборы в нём.</summary>
+        private class Panel
+        {
+            public Panel(string key, ElementId levelId, XYZ point, ZoneGroup zone)
+            {
+                Key = key;
+                LevelId = levelId;
+                Point = point;
+                Zone = zone;
+            }
+
+            public string Key { get; }
+
+            public ElementId LevelId { get; }
+
+            public XYZ Point { get; }
+
+            public ZoneGroup Zone { get; }
+        }
+
+        /// <summary>
+        /// Находит щиты и заводит под каждый пустую ячейку. Ячейка создаётся заранее, до приборов:
+        /// щит есть на схеме, даже если внутри него ничего не нашлось, — иначе на этаже пропадёт
+        /// узел, через который идут все стояки.
+        /// </summary>
+        private static List<Panel> Panels(
+            Document document,
+            SchemeSettings settings,
+            IList<Level> levels,
+            Dictionary<int, FloorGroup> floors,
+            Dictionary<int, double> elevations)
+        {
+            var panels = new List<Panel>();
+            if (string.IsNullOrWhiteSpace(settings.MatrixPanelPattern)) return panels;
+
+            foreach (BuiltInCategory category in settings.Categories)
+            {
+                foreach (Element instance in new FilteredElementCollector(document)
+                             .OfCategory(category)
+                             .WhereElementIsNotElementType())
+                {
+                    ElementId typeId = instance.GetTypeId();
+                    if (typeId == ElementId.InvalidElementId) continue;
+                    if (!IsPanel(document, typeId, settings)) continue;
+
+                    XYZ point = PointOf(instance);
+                    ElementId levelId = ResolveLevel(instance, point, levels);
+                    if (levelId == ElementId.InvalidElementId) continue;
+
+                    FloorGroup floor = Floor(document, floors, elevations, levelId);
+
+                    string key = PanelKey + instance.UniqueId;
+                    var zone = new ZoneGroup(key, settings.MatrixPanelPrefix.Trim());
+
+                    zone.Observe(point);
+                    floor.Zones.Add(zone);
+
+                    panels.Add(new Panel(key, levelId, point, zone));
+                }
+            }
+
+            return panels;
+        }
+
+        /// <summary>Ближайший щит того же этажа в пределах радиуса. Дальше радиуса — не его прибор.</summary>
+        private static Panel Nearest(IList<Panel> panels, ElementId levelId, XYZ point, double radius)
+        {
+            if (panels.Count == 0 || point == null || radius <= 0.0) return null;
+
+            Panel best = null;
+            double bestDistance = radius;
+
+            foreach (Panel panel in panels)
+            {
+                if (panel.LevelId != levelId || panel.Point == null) continue;
+
+                // Сравниваем по плану: щит висит на стене, прибор стоит под потолком, и разница
+                // высот тут ни при чём.
+                double dx = panel.Point.X - point.X;
+                double dy = panel.Point.Y - point.Y;
+                double distance = Math.Sqrt(dx * dx + dy * dy);
+
+                if (distance > bestDistance) continue;
+
+                bestDistance = distance;
+                best = panel;
+            }
+
+            return best;
+        }
+
         /// <summary>Этажный ли это щит — по части имени типа, заданной в настройках.</summary>
         private static bool IsPanel(Document document, ElementId typeId, SchemeSettings settings)
         {
@@ -240,62 +343,6 @@ namespace SchemeBuilder.Core
 
             return type.Name.IndexOf(settings.MatrixPanelPattern.Trim(), StringComparison.CurrentCultureIgnoreCase) >= 0
                 || type.FamilyName.IndexOf(settings.MatrixPanelPattern.Trim(), StringComparison.CurrentCultureIgnoreCase) >= 0;
-        }
-
-        /// <summary>
-        /// Нумерует щиты этажа: «ЩТС 6.1», «ЩТС 6.2» — как на выпущенном листе. Номер этажа берётся
-        /// из его имени, порядок — слева направо по плану: на схеме щиты стоят в том же порядке.
-        /// </summary>
-        private static void NumberPanels(SchemeData data, SchemeSettings settings)
-        {
-            string prefix = settings.MatrixPanelPrefix ?? string.Empty;
-
-            foreach (FloorGroup floor in data.Floors)
-            {
-                List<ZoneGroup> panels = floor.Zones
-                    .Where(z => z.Key.StartsWith("PANEL:", StringComparison.Ordinal))
-                    .OrderBy(z => z.AverageX)
-                    .ToList();
-
-                if (panels.Count == 0) continue;
-
-                string level = FloorNumber(floor.Name);
-
-                for (int index = 0; index < panels.Count; index++)
-                {
-                    string number = level.Length == 0
-                        ? (index + 1).ToString(CultureInfo.CurrentCulture)
-                        : level + "." + (index + 1).ToString(CultureInfo.CurrentCulture);
-
-                    panels[index].Rename(prefix + number);
-                }
-            }
-        }
-
-        /// <summary>Номер этажа из его имени: «06 15,600 Этаж 6» → «6». Не нашёлся — пусто.</summary>
-        private static string FloorNumber(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name)) return string.Empty;
-
-            // Берём последнее число имени: впереди у уровней стоят порядковый номер и отметка,
-            // а номер этажа записан в конце — «06 15,600 Этаж 6».
-            string digits = string.Empty;
-            string found = string.Empty;
-
-            foreach (char symbol in name)
-            {
-                if (char.IsDigit(symbol))
-                {
-                    digits += symbol;
-                    continue;
-                }
-
-                if (digits.Length > 0 && symbol != ',' && symbol != '.') { found = digits; digits = string.Empty; }
-                else if (symbol == ',' || symbol == '.') digits = string.Empty;
-            }
-
-            if (digits.Length > 0) found = digits;
-            return found.TrimStart('0');
         }
 
         /// <summary>
