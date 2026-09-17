@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
     <LangVersion>latest</LangVersion>
     <!-- Исходники в UTF-8 без BOM: без CodePage компилятор прочитает кириллицу как ANSI -->
     <CodePage>65001</CodePage>
@@ -43,9 +45,15 @@
     </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Drawing" />
-    <!-- Иконки кнопок ленты Revit — это WPF ImageSource -->
     <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="WindowsBase" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\TNovCommon\TNovCommon.csproj">
+      <SetConfiguration>Configuration=R2022</SetConfiguration>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>

@@ -5,6 +5,7 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using SchemeBuilder.Core;
+using TNovCommon;
 
 namespace SchemeBuilder.Commands
 {
@@ -23,10 +24,11 @@ namespace SchemeBuilder.Commands
 
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
-            UIDocument uiDocument = commandData.Application.ActiveUIDocument;
+            UIApplication uiApplication = commandData.Application;
+            UIDocument uiDocument = uiApplication.ActiveUIDocument;
             if (uiDocument == null)
             {
-                TaskDialog.Show(Title, "Откройте проект.");
+                RevitWindow.ShowDialog(new InfoWindow280("Откройте проект."), uiApplication);
                 return Result.Cancelled;
             }
 

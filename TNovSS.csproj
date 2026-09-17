@@ -19,6 +19,18 @@
     <ProjectReference Include="..\TNovCommon\TNovCommon.csproj" Private="false" />
   </ItemGroup>
 
+  <!-- SchemeBuilder компилируется в эту сборку. App.cs — точка входа автономного плагина,
+       кнопки ленты объявляются в TNov/Application.cs. -->
+  <ItemGroup>
+    <Compile Remove="SchemeBuilder\src\SchemeBuilder\App.cs" />
+    <Compile Remove="SchemeBuilder\**\bin\**" />
+    <Compile Remove="SchemeBuilder\**\obj\**" />
+    <EmbeddedResource Include="SchemeBuilder\src\SchemeBuilder\Resources\*.png">
+      <LogicalName>SchemeBuilder.Resources.%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+    <None Include="SchemeBuilder\**\*" Exclude="SchemeBuilder\**\bin\**;SchemeBuilder\**\obj\**;SchemeBuilder\**\*.cs;SchemeBuilder\**\*.png;SchemeBuilder\**\*.xaml" />
+  </ItemGroup>
+
   <!-- ===== Версионирование ===== -->
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="powershell -ExecutionPolicy Bypass -File &quot;$(ProjectDir)UpdateVersion.ps1&quot;" />

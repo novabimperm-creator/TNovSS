@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-using System.Windows.Forms;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using SchemeBuilder.Core;
 using SchemeBuilder.UI;
+using TNovCommon;
 using View = Autodesk.Revit.DB.View;
 
 namespace SchemeBuilder.Commands
@@ -23,10 +23,11 @@ namespace SchemeBuilder.Commands
 
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
-            UIDocument uiDocument = commandData.Application.ActiveUIDocument;
+            UIApplication uiApplication = commandData.Application;
+            UIDocument uiDocument = uiApplication.ActiveUIDocument;
             if (uiDocument == null)
             {
-                TaskDialog.Show(Title, "Откройте проект.");
+                RevitWindow.ShowDialog(new InfoWindow280("Откройте проект."), uiApplication);
                 return Result.Cancelled;
             }
 
@@ -42,14 +43,12 @@ namespace SchemeBuilder.Commands
             View legend;
             MatrixLayout matrix;
 
-            using (var wizard = new WizardForm(document, settings, legends))
-            {
-                if (wizard.ShowDialog() != DialogResult.OK) return Result.Cancelled;
+            var wizard = new WizardWindow(document, settings, legends);
+            if (RevitWindow.ShowDialog(wizard, uiApplication) != true) return Result.Cancelled;
 
-                rows = wizard.Rows;
-                legend = wizard.SelectedLegend;
-                matrix = wizard.Matrix;
-            }
+            rows = wizard.Rows;
+            legend = wizard.SelectedLegend;
+            matrix = wizard.Matrix;
 
             BuildResult legendResult = null;
             MatrixResult matrixResult = null;

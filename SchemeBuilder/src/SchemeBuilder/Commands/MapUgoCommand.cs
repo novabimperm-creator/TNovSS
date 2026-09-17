@@ -2,12 +2,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using SchemeBuilder.Core;
 using SchemeBuilder.UI;
+using TNovCommon;
 
 namespace SchemeBuilder.Commands
 {
@@ -23,10 +23,11 @@ namespace SchemeBuilder.Commands
 
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
-            UIDocument uiDocument = commandData.Application.ActiveUIDocument;
+            UIApplication uiApplication = commandData.Application;
+            UIDocument uiDocument = uiApplication.ActiveUIDocument;
             if (uiDocument == null)
             {
-                TaskDialog.Show(Title, "Откройте проект.");
+                RevitWindow.ShowDialog(new InfoWindow280("Откройте проект."), uiApplication);
                 return Result.Cancelled;
             }
 
@@ -39,18 +40,14 @@ namespace SchemeBuilder.Commands
             List<DeviceRow> rows = DeviceScanner.Scan(document, DeviceScanner.KnownCategories, settings);
             if (rows.Count == 0)
             {
-                TaskDialog.Show(Title, "Оборудования в модели не нашлось — сопоставлять нечего.");
+                RevitWindow.ShowDialog(new InfoWindow280("Оборудования в модели не нашлось — сопоставлять нечего."), uiApplication);
                 return Result.Cancelled;
             }
 
-            List<UgoMatch> matches;
+            var window = new UgoWindow(document, settings, rows);
+            if (RevitWindow.ShowDialog(window, uiApplication) != true) return Result.Cancelled;
 
-            using (var form = new UgoForm(document, settings, rows))
-            {
-                if (form.ShowDialog() != DialogResult.OK) return Result.Cancelled;
-
-                matches = form.Matches;
-            }
+            List<UgoMatch> matches = window.Matches;
 
             using (var transaction = new Transaction(document, "УГО оборудования"))
             {
