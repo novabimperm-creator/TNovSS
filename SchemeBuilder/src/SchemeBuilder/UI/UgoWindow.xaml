@@ -1,0 +1,171 @@
+<Window x:Class="SchemeBuilder.UI.UgoWindow"
+        x:ClassModifier="internal"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="УГО ОБОРУДОВАНИЯ"
+        Width="1120"
+        Height="660"
+        MinWidth="900"
+        MinHeight="480"
+        WindowStartupLocation="CenterScreen"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="CanResize"
+        WindowStyle="None">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/TNovCommon;component/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="30"
+                      ResizeBorderThickness="5"
+                      GlassFrameThickness="0"
+                      CornerRadius="12"/>
+    </WindowChrome.WindowChrome>
+
+    <Border CornerRadius="12"
+            Background="{StaticResource BgBrush}"
+            BorderBrush="{StaticResource AccentBrush}"
+            BorderThickness="1">
+        <Grid Margin="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    MouseDown="TitleBar_MouseDown"
+                    Background="Transparent"
+                    Cursor="Arrow"
+                    Margin="6,6,6,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="35"/>
+                        <ColumnDefinition Width="35"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="УГО ОБОРУДОВАНИЯ"
+                               Grid.Column="0"
+                               Foreground="{StaticResource AccentBrush}"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               VerticalAlignment="Center"/>
+                    <Button Content="i"
+                            Grid.Column="1"
+                            Style="{StaticResource CloseButtonStyleMini}"
+                            Click="HelpButton_Click"
+                            WindowChrome.IsHitTestVisibleInChrome="True"/>
+                    <Button Content="✕"
+                            Grid.Column="2"
+                            Style="{StaticResource CloseButtonStyleMini}"
+                            Click="Cancel_Click"
+                            IsCancel="True"
+                            WindowChrome.IsHitTestVisibleInChrome="True"/>
+                </Grid>
+            </Border>
+
+            <TextBlock Grid.Row="1"
+                       Style="{StaticResource DialogHintStyle}"
+                       Margin="6,0,6,10"
+                       Text="УГО схемы — аннотации проекта (RBZ_УГО-2D_Узел_*): ими начерчены выпущенные листы, и подписи «Марка» и «N шт.» у них уже внутри. Плагин подставляет УГО по параметру типа «Типоразмер УГО»; подставленное помечено серым — проверьте и поправьте, где не угадал."/>
+
+            <Border Grid.Row="2"
+                    Style="{StaticResource PanelFrameStyle}"
+                    Padding="8"
+                    Margin="0,0,0,10">
+                <DataGrid x:Name="Grid"
+                          Style="{StaticResource DarkDataGridStyle}"
+                          ColumnHeaderStyle="{StaticResource DarkDataGridColumnHeaderStyle}"
+                          CellStyle="{StaticResource DarkDataGridCellStyle}"
+                          AutoGenerateColumns="False"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"
+                          CanUserResizeRows="False"
+                          HeadersVisibility="Column"
+                          SelectionUnit="Cell"
+                          EnableRowVirtualization="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Код"
+                                            Binding="{Binding Code}"
+                                            Width="70"
+                                            IsReadOnly="True"
+                                            ElementStyle="{StaticResource DarkDataGridTextElementStyle}"/>
+                        <DataGridTextColumn Header="Типоразмер"
+                                            Binding="{Binding TypeName}"
+                                            Width="240"
+                                            IsReadOnly="True"
+                                            ElementStyle="{StaticResource DarkDataGridTextElementStyle}"/>
+                        <DataGridTextColumn Header="Шт."
+                                            Binding="{Binding Count}"
+                                            Width="50"
+                                            IsReadOnly="True"
+                                            ElementStyle="{StaticResource DarkDataGridTextElementStyle}"/>
+                        <DataGridTextColumn Header="«Типоразмер УГО» в типе"
+                                            Binding="{Binding Declared}"
+                                            Width="200"
+                                            IsReadOnly="True"
+                                            ElementStyle="{StaticResource DarkDataGridTextElementStyle}"/>
+                        <DataGridTemplateColumn Header="УГО схемы" Width="280">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ComboBox ItemsSource="{Binding DataContext.UgoCaptions, RelativeSource={RelativeSource AncestorType=Window}}"
+                                              SelectedItem="{Binding SelectedCaption, UpdateSourceTrigger=PropertyChanged}"
+                                              Style="{StaticResource DarkComboBoxStyle}"
+                                              Margin="0"
+                                              Padding="8,4"
+                                              MinHeight="28"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Откуда"
+                                            Binding="{Binding State}"
+                                            Width="140"
+                                            IsReadOnly="True"
+                                            ElementStyle="{StaticResource DarkDataGridTextElementStyle}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+
+            <TextBlock x:Name="Summary"
+                       Grid.Row="3"
+                       Style="{StaticResource DialogHintStyle}"
+                       Margin="6,0,6,10"/>
+
+            <Grid Grid.Row="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="140"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="160"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0"
+                        Content="Снять все"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Click="Clear_Click"
+                        Margin="0"
+                        MinWidth="120"/>
+                <Button Grid.Column="2"
+                        Content="Отмена"
+                        Style="{StaticResource CloseButtonStyle}"
+                        Click="Cancel_Click"
+                        IsCancel="True"
+                        Margin="0"/>
+                <Button Grid.Column="4"
+                        Content="Применить"
+                        Style="{StaticResource RunButtonStyle}"
+                        Click="Apply_Click"
+                        IsDefault="True"
+                        Margin="0"/>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

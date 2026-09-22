@@ -7,6 +7,8 @@ using System.Text;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 
+using static TNovCommon.ElementIdCompat;
+
 namespace SchemeBuilder.Core
 {
     /// <summary>
@@ -102,7 +104,7 @@ namespace SchemeBuilder.Core
             foreach (BuiltInCategory category in DeviceScanner.KnownCategories)
             {
                 List<Element> instances = Instances(document, category).ToList();
-                int types = instances.Select(e => e.GetTypeId().IntegerValue).Distinct().Count();
+                int types = instances.Select(e => e.GetTypeId().IntValue()).Distinct().Count();
 
                 text.AppendLine(Label(category) + "\t" +
                                 instances.Count.ToString(CultureInfo.InvariantCulture) + "\t" +
@@ -126,7 +128,7 @@ namespace SchemeBuilder.Core
 
                 foreach (Element instance in Instances(document, category))
                 {
-                    int typeId = instance.GetTypeId().IntegerValue;
+                    int typeId = instance.GetTypeId().IntValue();
                     if (!byType.TryGetValue(typeId, out List<Element> list))
                     {
                         list = new List<Element>();
@@ -180,7 +182,7 @@ namespace SchemeBuilder.Core
                 if (sample == null) continue;
 
                 text.AppendLine("--- " + Label(category) + " --- образец ID " +
-                                sample.Id.IntegerValue.ToString(CultureInfo.InvariantCulture));
+                                sample.Id.IntValue().ToString(CultureInfo.InvariantCulture));
 
                 text.AppendLine("[экземпляр] имя\tхранение\tзначение");
                 foreach (string line in ParameterLines(sample)) text.AppendLine(line);
@@ -211,7 +213,7 @@ namespace SchemeBuilder.Core
                         break;
 
                     case StorageType.ElementId:
-                        value = parameter.AsValueString() ?? parameter.AsElementId().IntegerValue
+                        value = parameter.AsValueString() ?? parameter.AsElementId().IntValue()
                             .ToString(CultureInfo.InvariantCulture);
                         break;
 
@@ -306,7 +308,7 @@ namespace SchemeBuilder.Core
                     .WhereElementIsNotElementType()
                     .ToList();
 
-                int components = elements.Count(e => e.Category?.Id.IntegerValue ==
+                int components = elements.Count(e => e.Category?.Id.IntValue() ==
                                                      (int)BuiltInCategory.OST_LegendComponents);
                 int texts = elements.Count(e => e is TextNote);
                 int lines = elements.Count(e => e is DetailCurve);
@@ -646,7 +648,7 @@ namespace SchemeBuilder.Core
                     }
 
                     text.AppendLine(string.Join("\t",
-                        instance.Id.IntegerValue.ToString(CultureInfo.InvariantCulture),
+                        instance.Id.IntValue().ToString(CultureInfo.InvariantCulture),
                         Label(category),
                         (type?.FamilyName ?? "?") + ": " + (type?.Name ?? "?"),
                         instance.get_Parameter(BuiltInParameter.ALL_MODEL_MARK)?.AsString() ?? string.Empty,

@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using Autodesk.Revit.DB;
 
+using static TNovCommon.ElementIdCompat;
+
 namespace SchemeBuilder.Core
 {
     /// <summary>Чем считается зона — колонка будущей матрицы «этаж × зона».</summary>
@@ -251,18 +253,18 @@ namespace SchemeBuilder.Core
         /// <summary>Выбранное для типоразмера УГО: «семейство\tтипоразмер». Пусто — не выбрано.</summary>
         public string GetUgo(ElementId typeId)
         {
-            return _ugo.TryGetValue(typeId.IntegerValue, out string saved) ? saved : string.Empty;
+            return _ugo.TryGetValue(typeId.IntValue(), out string saved) ? saved : string.Empty;
         }
 
         public void SetUgo(ElementId typeId, string key)
         {
             if (string.IsNullOrEmpty(key))
             {
-                _ugo.Remove(typeId.IntegerValue);
+                _ugo.Remove(typeId.IntValue());
                 return;
             }
 
-            _ugo[typeId.IntegerValue] = key;
+            _ugo[typeId.IntValue()] = key;
         }
 
         public int UgoCount => _ugo.Count;
@@ -291,7 +293,7 @@ namespace SchemeBuilder.Core
         /// <summary>Накладывает сохранённые правки на строку, собранную из модели.</summary>
         public void ApplyTo(DeviceRow row)
         {
-            if (!_overrides.TryGetValue(row.TypeId.IntegerValue, out RowOverride saved)) return;
+            if (!_overrides.TryGetValue(row.TypeId.IntValue(), out RowOverride saved)) return;
 
             if (saved.Code != null)
             {
@@ -325,11 +327,11 @@ namespace SchemeBuilder.Core
 
             if (saved.Code == null && saved.Description == null && saved.Include)
             {
-                _overrides.Remove(row.TypeId.IntegerValue);
+                _overrides.Remove(row.TypeId.IntValue());
                 return;
             }
 
-            _overrides[row.TypeId.IntegerValue] = saved;
+            _overrides[row.TypeId.IntValue()] = saved;
         }
 
         // ===== Хранение =====
@@ -346,7 +348,7 @@ namespace SchemeBuilder.Core
                 text.AppendLine("CAT=" + ((int)category).ToString(CultureInfo.InvariantCulture));
             }
 
-            text.AppendLine("VIEW=" + LegendViewId.IntegerValue.ToString(CultureInfo.InvariantCulture));
+            text.AppendLine("VIEW=" + LegendViewId.IntValue().ToString(CultureInfo.InvariantCulture));
             text.AppendLine("GEN=" + string.Join(",", GeneratedIds.Select(id => id.ToString(CultureInfo.InvariantCulture))));
             text.AppendLine("ROWH=" + RowHeightMm.ToString(CultureInfo.InvariantCulture));
             text.AppendLine("SYMW=" + SymbolWidthMm.ToString(CultureInfo.InvariantCulture));
@@ -357,11 +359,11 @@ namespace SchemeBuilder.Core
             text.AppendLine("ZONEPARAM=" + Escape(ZoneParameterName));
             text.AppendLine("FLATPARAM=" + Escape(ApartmentParameterName));
             text.AppendLine("FLATPREFIX=" + Escape(ApartmentPrefix));
-            text.AppendLine("TEXTTYPE=" + TextTypeId.IntegerValue.ToString(CultureInfo.InvariantCulture));
+            text.AppendLine("TEXTTYPE=" + TextTypeId.IntValue().ToString(CultureInfo.InvariantCulture));
             text.AppendLine("LDRAW=" + (BuildLegend ? "1" : "0"));
             text.AppendLine("MDRAW=" + (BuildMatrix ? "1" : "0"));
             text.AppendLine("MTYPICAL=" + (CollapseTypicalFloors ? "1" : "0"));
-            text.AppendLine("MVIEW=" + MatrixViewId.IntegerValue.ToString(CultureInfo.InvariantCulture));
+            text.AppendLine("MVIEW=" + MatrixViewId.IntValue().ToString(CultureInfo.InvariantCulture));
             text.AppendLine("MNAME=" + Escape(MatrixViewName));
             text.AppendLine("MSCALE=" + MatrixScale.ToString(CultureInfo.InvariantCulture));
             text.AppendLine("MGEN=" + string.Join(",", MatrixGeneratedIds.Select(id => id.ToString(CultureInfo.InvariantCulture))));
@@ -381,7 +383,7 @@ namespace SchemeBuilder.Core
             text.AppendLine("LLINES=" + (BuildLineLegend ? "1" : "0"));
             text.AppendLine("LMERGE=" + (LegendMergeRows ? "1" : "0"));
             text.AppendLine("SHEET=" + (PlaceOnSheet ? "1" : "0"));
-            text.AppendLine("SHEETID=" + SheetId.IntegerValue.ToString(CultureInfo.InvariantCulture));
+            text.AppendLine("SHEETID=" + SheetId.IntValue().ToString(CultureInfo.InvariantCulture));
             text.AppendLine("SHEETNUM=" + Escape(SheetNumber));
             text.AppendLine("SHEETNAME=" + Escape(SheetName));
             text.AppendLine("SHEETBLOCK=" + Escape(SheetTitleBlock));

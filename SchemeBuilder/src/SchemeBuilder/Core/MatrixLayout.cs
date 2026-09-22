@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using Autodesk.Revit.DB;
 
+using static TNovCommon.ElementIdCompat;
+
 namespace SchemeBuilder.Core
 {
     /// <summary>Блок ячейки: код, УГО и количество — «BTH / 3 шт.».</summary>
@@ -422,9 +424,9 @@ namespace SchemeBuilder.Core
                 // этажи можно только по именам зон и составу.
                 text.Append(zone.Name).Append('{');
 
-                foreach (DeviceCount device in zone.Devices.OrderBy(d => d.TypeId.IntegerValue))
+                foreach (DeviceCount device in zone.Devices.OrderBy(d => d.TypeId.IntValue()))
                 {
-                    text.Append(device.TypeId.IntegerValue.ToString(CultureInfo.InvariantCulture))
+                    text.Append(device.TypeId.IntValue().ToString(CultureInfo.InvariantCulture))
                         .Append(':')
                         .Append(device.Count.ToString(CultureInfo.InvariantCulture))
                         .Append(';');

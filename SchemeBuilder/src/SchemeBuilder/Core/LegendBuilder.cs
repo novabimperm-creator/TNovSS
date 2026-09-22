@@ -4,6 +4,8 @@ using System.Globalization;
 using System.Linq;
 using Autodesk.Revit.DB;
 
+using static TNovCommon.ElementIdCompat;
+
 namespace SchemeBuilder.Core
 {
     /// <summary>Итог построения — что нарисовано и что пропущено.</summary>
@@ -179,7 +181,7 @@ namespace SchemeBuilder.Core
             }
 
             settings.GeneratedIds.Clear();
-            settings.GeneratedIds.AddRange(created.Select(id => id.IntegerValue));
+            settings.GeneratedIds.AddRange(created.Select(id => id.IntValue()));
 
             return result;
         }
@@ -249,8 +251,8 @@ namespace SchemeBuilder.Core
             {
                 ElementId symbol;
                 string key = row.Code + "\t" + row.Description + "\t" +
-                             (ugo.TryGetValue(row.TypeId.IntegerValue, out symbol)
-                                 ? symbol.IntegerValue.ToString(CultureInfo.InvariantCulture)
+                             (ugo.TryGetValue(row.TypeId.IntValue(), out symbol)
+                                 ? symbol.IntValue().ToString(CultureInfo.InvariantCulture)
                                  : "0");
 
                 if (!seen.Add(key)) continue;
@@ -380,7 +382,7 @@ namespace SchemeBuilder.Core
             double centerY)
         {
             ElementId symbolId;
-            if (ugo == null || !ugo.TryGetValue(row.TypeId.IntegerValue, out symbolId)) return false;
+            if (ugo == null || !ugo.TryGetValue(row.TypeId.IntValue(), out symbolId)) return false;
 
             try
             {

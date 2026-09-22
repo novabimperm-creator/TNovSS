@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using Autodesk.Revit.DB;
 
+using static TNovCommon.ElementIdCompat;
+
 namespace SchemeBuilder.Core
 {
     /// <summary>Аннотация проекта, которой можно нарисовать УГО прибора на схеме.</summary>
@@ -95,7 +97,7 @@ namespace SchemeBuilder.Core
                 .OfClass(typeof(FamilySymbol))
                 .Cast<FamilySymbol>()
                 .Where(s => s.Category != null &&
-                            UgoCategories.Contains((BuiltInCategory)s.Category.Id.IntegerValue))
+                            UgoCategories.Contains((BuiltInCategory)s.Category.Id.IntValue()))
                 .Select(s => new UgoCandidate(s))
                 .OrderBy(c => c.FamilyName, StringComparer.CurrentCultureIgnoreCase)
                 .ThenBy(c => c.SymbolName, StringComparer.CurrentCultureIgnoreCase)
@@ -336,7 +338,7 @@ namespace SchemeBuilder.Core
                 if (string.IsNullOrEmpty(saved)) continue;
 
                 UgoCandidate found = candidates.FirstOrDefault(c => c.Key == saved);
-                if (found != null) map[symbol.Id.IntegerValue] = found.Id;
+                if (found != null) map[symbol.Id.IntValue()] = found.Id;
             }
 
             return map;

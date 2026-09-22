@@ -4,6 +4,8 @@ using System.Globalization;
 using System.Linq;
 using Autodesk.Revit.DB;
 
+using static TNovCommon.ElementIdCompat;
+
 namespace SchemeBuilder.Core
 {
     /// <summary>Итог построения матрицы.</summary>
@@ -262,7 +264,7 @@ namespace SchemeBuilder.Core
             }
 
             settings.MatrixGeneratedIds.Clear();
-            settings.MatrixGeneratedIds.AddRange(created.Select(id => id.IntegerValue));
+            settings.MatrixGeneratedIds.AddRange(created.Select(id => id.IntValue()));
 
             result.Notes.AddRange(layout.Notes);
             return result;
@@ -528,7 +530,7 @@ namespace SchemeBuilder.Core
             ElementId symbolId;
             FamilyInstance placed = null;
 
-            if (ugo.TryGetValue(block.TypeId.IntegerValue, out symbolId))
+            if (ugo.TryGetValue(block.TypeId.IntValue(), out symbolId))
             {
                 placed = PlaceUgo(document, view, created, symbolId, centerX, centerY);
             }

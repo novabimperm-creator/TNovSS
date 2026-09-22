@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup />
+  <ItemGroup>
+    <Compile Update="BaseForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="CategorySelectionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="ConfirmationForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="CurrentFamilySelectionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="DistanceSettingsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="IntersectionResultsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="LevelSelectionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="LinkedFamilySelectionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="LinkSelectionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="ProgressForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="ResultForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="SingleCategorySelectionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+</Project>

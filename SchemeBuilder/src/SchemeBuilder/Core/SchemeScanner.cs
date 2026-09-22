@@ -5,6 +5,8 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 
+using static TNovCommon.ElementIdCompat;
+
 namespace SchemeBuilder.Core
 {
     /// <summary>
@@ -31,12 +33,12 @@ namespace SchemeBuilder.Core
             var data = new SchemeData();
 
             Dictionary<int, string> codes = rows
-                .GroupBy(r => r.TypeId.IntegerValue)
+                .GroupBy(r => r.TypeId.IntValue())
                 .ToDictionary(g => g.Key, g => g.First().Code);
 
             // На схему идёт то же, что и в легенду. Иначе в ячейки лезут отверстия, гильзы и
             // закладные: они той же категории, и выключить их на шаге 2 оказывается бесполезно.
-            var included = new HashSet<int>(rows.Where(r => r.Include).Select(r => r.TypeId.IntegerValue));
+            var included = new HashSet<int>(rows.Where(r => r.Include).Select(r => r.TypeId.IntValue()));
 
             bool byRoom = settings.Zoning != ZoneSource.DeviceParameter;
             RoomLocator locator = byRoom ? new RoomLocator(document) : null;
@@ -76,7 +78,7 @@ namespace SchemeBuilder.Core
 
                     // Сам щит блоком не рисуется: он и есть ячейка.
                     if (IsPanel(document, typeId, settings)) continue;
-                    if (!included.Contains(typeId.IntegerValue)) continue;
+                    if (!included.Contains(typeId.IntValue())) continue;
 
                     XYZ point = PointOf(instance);
 
@@ -117,7 +119,7 @@ namespace SchemeBuilder.Core
                     DeviceCount device = zone.Devices.FirstOrDefault(d => d.TypeId == typeId);
                     if (device == null)
                     {
-                        string code = codes.TryGetValue(typeId.IntegerValue, out string found) ? found : string.Empty;
+                        string code = codes.TryGetValue(typeId.IntValue(), out string found) ? found : string.Empty;
                         string name = (document.GetElement(typeId) as ElementType)?.Name ?? string.Empty;
 
                         device = new DeviceCount(typeId, code, name);
@@ -161,7 +163,7 @@ namespace SchemeBuilder.Core
             Dictionary<int, double> elevations,
             ElementId levelId)
         {
-            int key = levelId.IntegerValue;
+            int key = levelId.IntValue();
             if (floors.TryGetValue(key, out FloorGroup existing)) return existing;
 
             var level = document.GetElement(levelId) as Level;
